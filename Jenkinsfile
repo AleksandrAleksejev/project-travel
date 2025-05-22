@@ -16,11 +16,16 @@ pipeline {
 
         stage('Run Container') {
             steps {
-                // Останавливаем и удаляем контейнер, если он уже существует
-                sh 'docker stop travel-app || true'
-                sh 'docker rm travel-app || true'
-                // Запускаем новый контейнер
-                sh 'docker run -d -p 3000:3000 --name travel-app travel-app'
+                script {
+                    // Останавливаем и удаляем контейнер, если он уже существует
+                    sh 'docker stop travel-app || true'
+                    sh 'docker rm travel-app || true'
+                    // Освобождаем порт 3000, если он занят
+                    sh 'docker ps -q --filter ancestor=travel-app | xargs -r docker stop || true'
+                    sh 'docker ps -aq --filter ancestor=travel-app | xargs -r docker rm || true'
+                    // Запускаем новый контейнер
+                    sh 'docker run -d -p 3000:3000 --name travel-app travel-app'
+                }
             }
         }
 
@@ -32,7 +37,6 @@ pipeline {
         }
     }
 
-    // Добавляем post-секцию для очистки
     post {
         always {
             // Очищаем Docker-контейнеры и образы после завершения
