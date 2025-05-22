@@ -17,31 +17,36 @@ pipeline {
         stage('Run Container') {
             steps {
                 script {
-                    // Останавливаем и удаляем контейнер, если он уже существует
-                    sh 'docker stop travel-app || true'
-                    sh 'docker rm travel-app || true'
-                    // Освобождаем порт 3000, если он занят
-                    sh 'docker ps -q --filter ancestor=travel-app | xargs -r docker stop || true'
-                    sh 'docker ps -aq --filter ancestor=travel-app | xargs -r docker rm || true'
-                    // Запускаем новый контейнер
-                    sh 'docker run -d -p 3000:3000 --name travel-app travel-app'
+                    // 1. Останавливаем и удаляем все контейнеры, использующие наш образ
+                    sh 'docker ps -aq --filter ancestor=travel-app | xargs -r docker rm -f || true'
+                    
+                    // 2. Освобождаем порт 3000 (если занят не Docker-процессом)
+                    sh 'pkill -f "node app.js" || true'
+                    sh 'fuser -k 3000/tcp || true'
+                    
+                    // 3. Запускаем контейнер с проверкой порта
+                    def portAvailable = sh(script: 'nc -z localhost 3000 && echo "no" || echo "yes"', returnStdout: true).trim()
+                    if (portAvailable == "no") {
+                        error("Port 3000 is still in use after cleanup!")
+                    } else {
+                        sh 'docker run -d -p 3000:3000 --name travel-app travel-app'
+                    }
                 }
             }
         }
 
         stage('Test Endpoint') {
             steps {
-                sh 'sleep 5' // Даем время контейнеру запуститься
-                sh 'curl --fail http://localhost:3000/travel'
+                sh 'sleep 5'
+                sh 'curl --fail --retry 3 --retry-delay 5 http://localhost:3000/travel'
             }
         }
     }
 
     post {
         always {
-            // Очищаем Docker-контейнеры и образы после завершения
             sh 'docker stop travel-app || true'
-            sh 'docker rm travel-app || true'
+            sh 'docker rm -f travel-app || true'
             sh 'docker rmi travel-app || true'
         }
     }
