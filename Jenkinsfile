@@ -13,7 +13,7 @@ stages {
         stage('Run Container') {
             steps {
                 script {
-                     sh "docker run . -t ('-p 3000:3000')
+                     sh 'docker run -d -p 3000:3000 --name travel-app travel-app'
                 }
             }
         }
