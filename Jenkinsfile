@@ -5,7 +5,7 @@ stages {
         stage('Build Docker Image') {
             steps {
                 script {
-                    dockerImage = docker.build("travel-app")
+                    sh "docker build . -t 'travel-app')
                 }
             }
         }
@@ -13,7 +13,7 @@ stages {
         stage('Run Container') {
             steps {
                 script {
-                    dockerImage.run('-p 3000:3000')
+                     sh "docker build . -t ('-p 3000:3000')
                 }
             }
         }
