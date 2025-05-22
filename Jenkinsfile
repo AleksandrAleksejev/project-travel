@@ -14,7 +14,7 @@ pipeline {
             steps {
                 script {
     
-            sh 'docker run -d -p 3000:3000 --name travel-app travel-app'
+            sh 'docker run -d -p 3000:3000 --name travel-app'
                 }
             }
         }
