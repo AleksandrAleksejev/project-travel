@@ -13,7 +13,7 @@ stages {
         stage('Run Container') {
             steps {
                 script {
-                     sh "docker build . -t ('-p 3000:3000')
+                     sh "docker run . -t ('-p 3000:3000')
                 }
             }
         }
