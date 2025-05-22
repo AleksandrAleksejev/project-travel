@@ -13,7 +13,9 @@ pipeline {
         stage('Run Container') {
             steps {
                 script {
-                    sh 'docker run -d -p 3000:3000 --name travel-app travel-app'
+            sh 'docker stop travel-app || true'
+            sh 'docker rm travel-app || true'
+            sh 'docker run -d -p 3000:3000 --name travel-app travel-app'
                 }
             }
         }
