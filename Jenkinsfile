@@ -1,11 +1,11 @@
 pipeline {
     agent any
 
-stages {
+    stages {
         stage('Build Docker Image') {
             steps {
                 script {
-                    sh "docker build . -t 'travel-app')
+                    sh "docker build . -t travel-app"
                 }
             }
         }
@@ -13,7 +13,7 @@ stages {
         stage('Run Container') {
             steps {
                 script {
-                     sh 'npm test'
+                    sh 'docker run -d -p 3000:3000 --name travel-app travel-app'
                 }
             }
         }
